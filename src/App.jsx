@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ContentFactory from './ContentFactory'; 
 import EditorialCalendar from './EditorialCalendar';
-import { Sparkles, CalendarDays, Users, CheckSquare } from 'lucide-react';
+import { Sparkles, CalendarDays, Users, CheckSquare, Plus, Trash2 } from 'lucide-react';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState('factory');
@@ -18,17 +18,40 @@ export default function App() {
     }
   ]);
 
-  // État pour la gestion des tâches simplifiée
+  // État pour la gestion des tâches
   const [tasks, setTasks] = useState([
     { id: 1, text: "Valider le prochain post AIDA", completed: false },
     { id: 2, text: "Recharger les visuels pour la semaine", completed: true }
   ]);
 
-  // État pour le CRM simplifié
+  // État pour le texte de la nouvelle tâche à ajouter
+  const [newTaskText, setNewTaskText] = useState('');
+
+  // État pour le CRM
   const [leads, setLeads] = useState([
     { id: 1, name: "Jean Dupont", company: "SME Tech", status: "Prospect", email: "jean@smetech.com" },
     { id: 2, name: "Marie Larson", company: "Coaching Pro", status: "Contacté", email: "contact@marielarson.com" }
   ]);
+
+  // Fonction pour ajouter une tâche
+  const handleAddTask = (e) => {
+    e.preventDefault();
+    if (!newTaskText.trim()) return;
+
+    const newTask = {
+      id: Date.now(), // ID unique basé sur le timestamp
+      text: newTaskText.trim(),
+      completed: false
+    };
+
+    setTasks([...tasks, newTask]);
+    setNewTaskText(''); // Réinitialise le champ de texte
+  };
+
+  // Fonction pour supprimer une tâche
+  const handleDeleteTask = (taskId) => {
+    setTasks(tasks.filter(task => task.id !== taskId));
+  };
 
   return (
     <div className="flex h-screen bg-slate-100 text-slate-900 font-sans antialiased text-sm">
@@ -99,30 +122,68 @@ export default function App() {
           />
         )}
 
-        {/* ONGLET 3 : LA GESTION DES TÂCHES (Nouveau) */}
+        {/* ONGLET 3 : LA GESTION DES TÂCHES ACTIVALES (Mis à jour) */}
         {currentTab === 'tasks' && (
-          <div className="space-y-6">
+          <div className="space-y-6 max-w-xl">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><CheckSquare className="text-indigo-600" /> Gestion des Tâches</h2>
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <CheckSquare className="text-indigo-600" /> Gestion des Tâches
+              </h2>
               <p className="text-slate-500 mt-1">Suivez vos actions quotidiennes de Community Management.</p>
             </div>
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-xl space-y-3">
-              {tasks.map(t => (
-                <div key={t.id} className="flex items-center gap-3 p-3 border rounded-lg bg-slate-50/50">
-                  <input 
-                    type="checkbox" 
-                    checked={t.completed} 
-                    onChange={() => setTasks(tasks.map(task => task.id === t.id ? {...task, completed: !task.completed} : task))}
-                    className="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4"
-                  />
-                  <span className={`text-xs ${t.completed ? 'line-through text-slate-400' : 'text-slate-700 font-medium'}`}>{t.text}</span>
-                </div>
-              ))}
+
+            {/* Formulaire pour ajouter une tâche */}
+            <form onSubmit={handleAddTask} className="flex gap-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <input 
+                type="text" 
+                value={newTaskText}
+                onChange={(e) => setNewTaskText(e.target.value)}
+                placeholder="Ex: Planifier le post de jeudi prochain..." 
+                className="flex-1 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700"
+              />
+              <button 
+                type="submit" 
+                className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow-sm transition-colors"
+              >
+                <Plus size={14} /> Ajouter
+              </button>
+            </form>
+
+            {/* Liste des tâches */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
+              {tasks.length > 0 ? (
+                tasks.map(t => (
+                  <div key={t.id} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg bg-slate-50/50 hover:bg-slate-50 transition-colors group">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <input 
+                        type="checkbox" 
+                        checked={t.completed} 
+                        onChange={() => setTasks(tasks.map(task => task.id === t.id ? {...task, completed: !task.completed} : task))}
+                        className="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4 shrink-0 cursor-pointer"
+                      />
+                      <span className={`text-xs truncate ${t.completed ? 'line-through text-slate-400' : 'text-slate-700 font-medium'}`}>
+                        {t.text}
+                      </span>
+                    </div>
+                    
+                    {/* Bouton Supprimer */}
+                    <button 
+                      onClick={() => handleDeleteTask(t.id)}
+                      className="text-slate-400 hover:text-rose-600 p-1 rounded-md hover:bg-rose-50 transition-colors ml-2 shrink-0"
+                      title="Supprimer la tâche"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-slate-400 italic text-center py-4">Toutes les tâches ont été complétées ! 🎉</p>
+              )}
             </div>
           </div>
         )}
 
-        {/* ONGLET 4 : LE CRM LEADS (Nouveau) */}
+        {/* ONGLET 4 : LE CRM LEADS */}
         {currentTab === 'crm' && (
           <div className="space-y-6">
             <div>
