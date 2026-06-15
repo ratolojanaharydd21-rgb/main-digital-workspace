@@ -1,32 +1,12 @@
-// EditorialCalendar.jsx - Calendrier Éditorial Complet avec Planification et Visuels
+// EditorialCalendar.jsx - Calendrier Éditorial Réceptionnant les Données de App.jsx
 import React, { useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, Eye, Image, X, Calendar, FileText } from 'lucide-react';
 
-export default function EditorialCalendar() {
-  // Liste des posts dynamique avec état (State)
-  const [scheduledPosts, setScheduledPosts] = useState([
-    { 
-      id: 1, 
-      date: '2026-06-18', 
-      title: 'Post AIDA : Stratégie', 
-      content: 'Voici notre approche architecturale pour structurer vos réseaux...', 
-      platform: 'LinkedIn',
-      visual: null 
-    },
-    { 
-      id: 2, 
-      date: '2026-06-22', 
-      title: 'Hook : Éviter l\'épuisement', 
-      content: 'Déléguez vos tâches chronophages pour scaler sereinement.', 
-      platform: 'LinkedIn',
-      visual: null 
-    }
-  ]);
-
+export default function EditorialCalendar({ scheduledPosts, setScheduledPosts }) {
+  // Les états locaux gèrent uniquement la navigation du calendrier et la modale
   const [currentDate, setCurrentDate] = useState(new Date(2026, 5, 15)); // Juin 2026
   const [selectedDay, setSelectedDay] = useState(null);
   
-  // États pour la gestion de la planification (Modale)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newPost, setNewPost] = useState({
     title: '',
@@ -49,7 +29,6 @@ export default function EditorialCalendar() {
   const handlePrevMonth = () => { setCurrentDate(new Date(year, month - 1, 1)); setSelectedDay(null); };
   const handleNextMonth = () => { setCurrentDate(new Date(year, month + 1, 1)); setSelectedDay(null); };
 
-  // Gestion de l'importation du visuel (Image)
   const handleVisualChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -57,7 +36,7 @@ export default function EditorialCalendar() {
       reader.onloadend = () => {
         setNewPost(prev => ({
           ...prev,
-          visual: reader.result, // Contient l'image au format base64 lisible par le navigateur
+          visual: reader.result,
           visualName: file.name
         }));
       };
@@ -65,7 +44,6 @@ export default function EditorialCalendar() {
     }
   };
 
-  // Soumission du formulaire de planification
   const handleSchedulePost = (e) => {
     e.preventDefault();
     if (!newPost.title || !newPost.content) return;
@@ -85,14 +63,12 @@ export default function EditorialCalendar() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <CalendarDays className="text-indigo-600" /> Calendrier Éditorial
-          </h2>
-          <p className="text-slate-500 mt-1">Organisez visuellement vos publications et gérez vos médias.</p>
-        </div>
+    <div className="space-y-8 text-sm">
+      <div>
+        <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <CalendarDays className="text-indigo-600" /> Calendrier Éditorial
+        </h2>
+        <p className="text-slate-500 mt-1">Organisez visuellement vos publications et gérez vos médias.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -169,12 +145,12 @@ export default function EditorialCalendar() {
                     <div>
                       <span className="text-[9px] uppercase font-bold text-slate-400 bg-slate-200/60 px-1.5 py-0.5 rounded">{p.platform}</span>
                       <h4 className="text-sm font-semibold text-slate-800 mt-1.5">{p.title}</h4>
-                      <p className="text-xs text-slate-600 mt-1 whitespace-pre-wrap line-clamp-3 leading-relaxed">{p.content}</p>
+                      <p className="text-xs text-slate-600 mt-1 whitespace-pre-wrap leading-relaxed">{p.content}</p>
                     </div>
 
                     {p.visual && (
                       <div className="relative rounded-lg overflow-hidden border border-slate-200 bg-black max-h-32 flex items-center justify-center">
-                        <img src={p.visual} alt="Aperçu" className="object-cover w-full h-full opacity-90" />
+                        <img src={p.visual} alt="Aperçu" className="object-contain w-full h-full opacity-90" />
                       </div>
                     )}
                   </div>
@@ -191,81 +167,57 @@ export default function EditorialCalendar() {
         </div>
       </div>
 
-      {/* MODALE POPUP DE CRÉATION DE POST */}
+      {/* MODALE POPUP DE CRÉATION DE POST DE SECOURS */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-slate-900 flex items-center gap-2 text-sm">
-                <Calendar size={16} className="text-indigo-600" /> Planifier pour le {selectedDay.split('-').reverse().join('/')}
+              <h3 className="font-bold text-slate-900 flex items-center gap-2 text-xs">
+                <Calendar size={14} className="text-indigo-600" /> Planifier manuellement pour le {selectedDay.split('-').reverse().join('/')}
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-slate-200 rounded-lg text-slate-400 transition-colors">
-                <X size={18} />
+              <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-slate-200 rounded-lg text-slate-400">
+                <X size={16} />
               </button>
             </div>
 
-            <form onSubmit={handleSchedulePost} className="p-5 space-y-4 overflow-y-auto flex-1 text-sm">
+            <form onSubmit={handleSchedulePost} className="p-5 space-y-4 overflow-y-auto flex-1">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">Titre de la publication</label>
+                <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wide mb-1">Titre de la publication</label>
                 <input 
                   type="text" 
                   required
                   value={newPost.title}
                   onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Ex: Post Promotionnel - Offre Scaling" 
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-xs"
+                  placeholder="Ex: Mon post manuel" 
+                  className="w-full px-3 py-2 rounded-lg border text-xs"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">Contenu (Texte du Post)</label>
+                <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wide mb-1">Contenu (Texte)</label>
                 <textarea 
                   required
                   rows="4"
                   value={newPost.content}
                   onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))}
-                  placeholder="Écrivez ou collez le texte généré par l'Usine à Contenu ici..." 
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-xs resize-none"
+                  placeholder="Écrivez votre texte..." 
+                  className="w-full px-3 py-2 rounded-lg border text-xs resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">Ajouter un Visuel / Image</label>
-                <div className="mt-1 flex items-center justify-center border-2 border-dashed border-slate-300 rounded-lg p-4 bg-slate-50 hover:bg-slate-100/50 transition-colors relative">
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleVisualChange}
-                    className="absolute inset-0 opacity-0 cursor-pointer" 
-                  />
-                  <div className="text-center space-y-1 text-slate-500 pointer-events-none">
-                    <Image size={24} className="mx-auto text-slate-400" />
-                    <p className="text-xs font-medium">
-                      {newPost.visualName ? <span className="text-indigo-600 font-semibold">{newPost.visualName}</span> : "Cliquez pour importer une image"}
-                    </p>
-                    <p className="text-[10px] text-slate-400">PNG, JPG jusqu'à 5Mo</p>
+                <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wide mb-1">Visuel</label>
+                <div className="mt-1 flex items-center justify-center border-2 border-dashed rounded-lg p-4 bg-slate-50 relative">
+                  <input type="file" accept="image/*" onChange={handleVisualChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+                  <div className="text-center space-y-1 text-slate-500">
+                    <Image size={20} className="mx-auto text-slate-400" />
+                    <p className="text-xs">{newPost.visualName ? newPost.visualName : "Importer une image"}</p>
                   </div>
                 </div>
               </div>
 
-              {newPost.visual && (
-                <div className="relative rounded-lg overflow-hidden border border-slate-200 h-24 bg-slate-100 flex items-center justify-center">
-                  <img src={newPost.visual} alt="Preview" className="object-contain h-full w-full" />
-                  <button 
-                    type="button" 
-                    onClick={() => setNewPost(prev => ({ ...prev, visual: null, visualName: '' }))}
-                    className="absolute top-1 right-1 bg-rose-500 text-white p-1 rounded-full shadow-md hover:bg-rose-600"
-                  >
-                    <X size={10} />
-                  </button>
-                </div>
-              )}
-
-              <button 
-                type="submit" 
-                className="w-full bg-slate-900 text-white font-medium py-2.5 rounded-lg hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 text-xs shadow"
-              >
-                <FileText size={14} /> Valider la planification
+              <button type="submit" className="w-full bg-slate-900 text-white font-medium py-2 rounded-lg text-xs flex items-center justify-center gap-2">
+                <FileText size={12} /> Valider la planification
               </button>
             </form>
           </div>
