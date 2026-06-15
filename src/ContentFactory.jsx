@@ -40,12 +40,20 @@ export default function ContentFactory() {
       formData.framework
     );
 
+    // Vérification de sécurité locale avant l'appel
+    const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+    if (!apiKey) {
+      setGeneratedPost("❌ Erreur : La clé VITE_GROQ_API_KEY n'est pas détectée par le projet. Vérifiez vos variables d'environnement sur Vercel.");
+      setIsGenerating(false);
+      return;
+    }
+
     try {
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`
+          "Authorization": `Bearer ${apiKey}`
         },
         body: JSON.stringify({
           model: "llama3-8b-8192",
@@ -62,14 +70,19 @@ export default function ContentFactory() {
 
       const data = await response.json();
       
+      if (!response.ok) {
+        // Affiche la vraie cause renvoyée par le serveur Groq (ex: clé invalide, quota dépassé...)
+        throw new Error(data.error?.message || `Erreur serveur HTTP ${response.status}`);
+      }
+      
       if (data.choices && data.choices[0]) {
         setGeneratedPost(data.choices[0].message.content.trim());
       } else {
-        setGeneratedPost("⚠️ Une erreur est survenue. Vérifiez votre clé API Groq dans l'environnement.");
+        setGeneratedPost("⚠️ Réponse inattendue de l'IA. Groq n'a pas renvoyé de texte.");
       }
     } catch (error) {
       console.error("Erreur API Groq:", error);
-      setGeneratedPost("❌ Impossible de contacter l'IA. Vérifiez votre connexion.");
+      setGeneratedPost(`❌ Impossible de générer le post. Détails : ${error.message}`);
     } finally {
       setIsGenerating(false);
     }
