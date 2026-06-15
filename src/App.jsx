@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import ContentFactory from './components/ContentFactory'; // Ajustez le chemin selon votre projet
-import EditorialCalendar from './components/EditorialCalendar';
+import ContentFactory from './ContentFactory'; 
+import EditorialCalendar from './EditorialCalendar';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState('factory'); // 'factory' ou 'calendar'
